@@ -30,6 +30,6 @@ void xputs(const char* str);
 void xprintf(const char* format, ...);
 const char* xgetoutput(void);
 const char* xgetinput(void);
-int xgetinputcursor(void);
+size_t xgetinputcursor(void);
 
 #endif

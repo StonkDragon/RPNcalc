@@ -50,6 +50,23 @@ static struct variable {
 }* variables = NULL;
 static int variable_count = 0;
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+#ifndef M_E
+#define M_E 2.71828182845904523536
+#endif
+
+static char* duplicate_string(const char* str) {
+    size_t len = strlen(str);
+    char* copy = malloc(len + 1);
+    if (copy) {
+        strcpy(copy, str);
+    }
+    return copy;
+}
+
 static int set_variable(const char* name, double value) {
     for (int i = 0; i < variable_count; i++) {
         if (strcmp(variables[i].name, name) == 0) {
@@ -70,7 +87,7 @@ static int set_variable(const char* name, double value) {
         error(ERR_INTERNAL_ERROR);
         return 0; // Memory allocation failed
     }
-    variables[variable_count].name = strdup(name);
+    variables[variable_count].name = duplicate_string(name);
     variables[variable_count].value = value;
     variables[variable_count].writeable = 1; // New variables are writeable by default
     variable_count++;
@@ -91,7 +108,7 @@ static void set_variable_readonly(const char* name, double value) {
         error(ERR_INTERNAL_ERROR);
         return;
     }
-    variables[variable_count].name = strdup(name);
+    variables[variable_count].name = duplicate_string(name);
     variables[variable_count].value = value;
     variables[variable_count].writeable = 0; // New variables are read-only
     variable_count++;
@@ -267,11 +284,6 @@ static double op_ncr(double n, double r) {
     return op_npr(n, r) / op_factorial(r);
 }
 
-static double op_bee(void) {
-    error(ERR_BEE);
-    return NAN;
-}
-
 static struct opdata {
     char* name;
     void* op;
@@ -333,13 +345,13 @@ static struct opdata {
 };
 
 static char xoutput[X_WIDTH] = {0};
-static int xoutput_cursor = 0;
+static size_t xoutput_cursor = 0;
 
 static char xinput[X_WIDTH] = {0};
-static int xinput_cursor = 0;
+static size_t xinput_cursor = 0;
 
 static char* selected_buffer = xoutput;
-static int* selected_cursor = &xoutput_cursor;
+static size_t* selected_cursor = &xoutput_cursor;
 
 void xselectinput(void) {
     selected_buffer = xinput;
@@ -359,19 +371,8 @@ const char* xgetinput(void) {
     return xinput;
 }
 
-int xgetinputcursor(void) {
+size_t xgetinputcursor(void) {
     return xinput_cursor;
-}
-
-static size_t unicode_strlen(const char* str) {
-    size_t len = 0;
-    while (*str) {
-        if ((*str & 0xC0) != 0x80) { // Count only non-continuation bytes
-            len++;
-        }
-        str++;
-    }
-    return len;
 }
 
 void xclear(void) {
@@ -417,7 +418,7 @@ static void error(enum error_codes code) {
 }
 
 static struct opdata* findOp(char* name) {
-    for (int i = 0; i < sizeof(ops) / sizeof(ops[0]); i++) {
+    for (size_t i = 0; i < sizeof(ops) / sizeof(ops[0]); i++) {
         if (strcmp(ops[i].name, name) == 0) {
             return &ops[i];
         }
@@ -426,8 +427,6 @@ static struct opdata* findOp(char* name) {
 }
 
 static void doCalc(char* opChar) {
-    size_t len = strlen(opChar);
-
     double result = NAN;
     struct opdata* op = findOp(opChar);
 
@@ -494,8 +493,7 @@ static void doCalc(char* opChar) {
 
 static void pushInput() {
     char* input = xinput;
-    int inputSize = X_WIDTH;
-    int index = xinput_cursor;
+    size_t index = xinput_cursor;
 
     if (index > 0) {
         if (strspn(input, "0123456789.") != index) {
@@ -540,4 +538,5 @@ void press_backspace(void) {
 }
 
 void press_arrow(enum arrow_directions direction) {
+    (void)direction; // Unused parameter
 }

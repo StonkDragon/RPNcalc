@@ -375,12 +375,12 @@ char lowercase(char c) {
 void print() {
     const char* output = xgetoutput();
     const char* input = xgetinput();
-    int input_cursor = xgetinputcursor();
+    size_t input_cursor = xgetinputcursor();
 
     printf("\033[2J\033[1;1H");
     
     for (int row = 0; row < CHAR_HEIGHT; row++) {
-        for (int charIndex = 0; charIndex < X_WIDTH; charIndex++) {
+        for (size_t charIndex = 0; charIndex < X_WIDTH; charIndex++) {
             char c = lowercase(output[charIndex]);
             const char* glyph = font[(unsigned char)c];
             if (glyph == NULL) {
@@ -401,7 +401,7 @@ void print() {
     }
 
     for (int row = 0; row < CHAR_HEIGHT; row++) {
-        for (int charIndex = 0; charIndex < X_WIDTH; charIndex++) {
+        for (size_t charIndex = 0; charIndex < X_WIDTH; charIndex++) {
             int drawCursor = (charIndex == input_cursor) && (row == CHAR_HEIGHT - 1);
 
             char c = lowercase(input[charIndex]);
@@ -427,6 +427,8 @@ void print() {
 }
 
 void exit_program(int signum) {
+    (void)signum; // Unused parameter
+
     resetInput();
     printf("\033[2J\033[1;1H");
     printf("\033[?25h"); // Show cursor
